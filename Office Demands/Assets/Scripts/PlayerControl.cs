@@ -17,7 +17,7 @@ public class PlayerControl : MonoBehaviour
     float draggingFollowSpeed = 20f;
     public float throwForce = 20f;
     public float throwScaleSpeed = 2f;
-    bool interiorObjectWillFly;
+    public bool interiorObjectWillFly;
     public GameObject exteriorSelectedObject;
     public GameObject interiorSelectedObject;
     public ObjectHolder objectHolder;
@@ -56,7 +56,7 @@ public class PlayerControl : MonoBehaviour
             draggingTargetPos = MousePos();
             Vector3 target = draggingTargetPos;
             //if (cam.ScreenToViewportPoint(Input.mousePosition).x > 0.33f)
-            if (target.x > -0.52f)
+            if (target.x > -0.45f)
             {
                 Renderer r = arrow.GetComponent<Renderer>();
                 if (target.x <= 0.52f)
@@ -72,11 +72,15 @@ public class PlayerControl : MonoBehaviour
                 target.x = -0.52f;
                 arrow.gameObject.SetActive(true);
                 Vector3 arrowTarget = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, doorPosZ));
-                arrow.transform.position  = Vector3.Slerp(arrow.transform.position, target, Time.deltaTime * draggingFollowSpeed);
+                arrow.transform.position = Vector3.Slerp(arrow.transform.position, target, Time.deltaTime * draggingFollowSpeed);
 
                 arrow.SetPosition(1, arrowTarget - target);
             }
-            else arrow.gameObject.SetActive(false);
+            else
+            {
+                arrow.gameObject.SetActive(false);
+                interiorObjectWillFly = false;
+            }
             interiorSelectedObject.transform.position = Vector3.Slerp(interiorSelectedObject.transform.position, target, Time.deltaTime * draggingFollowSpeed);
         }
 
@@ -86,7 +90,11 @@ public class PlayerControl : MonoBehaviour
             {
                 if (objectHolder != null)
                 {
-                    objectHolder.TakeItem(exteriorSelectedObject.GetComponent<ExteriorItem>());
+                    ExteriorItem exItem = exteriorSelectedObject.GetComponent<ExteriorItem>();
+                    if (objectHolder.CanHold(exItem))
+                    {
+                        objectHolder.TakeItem(exItem);
+                    }
                 }
                 exteriorSelectedObject.SendMessage(objectHolder == null ? "OnEndDrag" : "OnEndDragFoundPlace", SendMessageOptions.DontRequireReceiver);
                 exteriorSelectedObject = null;
@@ -116,13 +124,14 @@ public class PlayerControl : MonoBehaviour
     IEnumerator ThrowItem(GameObject item, Vector3 target)
     {
         item.tag = "Untagged";
+        Vector3 targetSize = item.GetComponent<InteriorItem>().targetSize;
 
         Collider col = item.GetComponent<Collider>();
         if (col)
         {
             col.enabled = true;
         }
-        else Debug.LogWarning("Rigidbody component not found in throw: " + item);
+        else Debug.LogWarning("Collider component not found in throw: " + item);
         Rigidbody rb = item.GetComponent<Rigidbody>();
         if (rb)
         {
@@ -131,12 +140,12 @@ public class PlayerControl : MonoBehaviour
         }
         else Debug.LogWarning("Rigidbody component not found in throw: " + item);
 
-        while (item.transform.localScale.x < 1)
+        while (item.transform.localScale.x < targetSize.x)
         {
-            item.transform.localScale += Vector3.one * Time.deltaTime * throwScaleSpeed;
+            item.transform.localScale += targetSize * Time.deltaTime * throwScaleSpeed;
             yield return null;
         }
-        item.transform.localScale = Vector3.one;
+        item.transform.localScale = targetSize;
         yield return null;
     }
 }

@@ -7,15 +7,19 @@ using UnityEngine;
 public class InteriorItem : MonoBehaviour
 {
     public Vector3 returnPos;
+    public Vector3 targetSize = Vector3.one;
+    public InteriorItemType type;
     private float returnSpeed = 10f;
     PlayerControl player;
     bool haveBeenThrown;
+    Collider[] cols;
 
     // Start is called before the first frame update
     void Start()
     {
         player = PlayerControl.instance;
         haveBeenThrown = false;
+        cols = gameObject.GetComponentsInChildren<Collider>();
     }
 
     private void OnMouseEnter()
@@ -66,6 +70,9 @@ public class InteriorItem : MonoBehaviour
     {
         //place in object holder
         haveBeenThrown = true;
+
+        Destroy(cols[0]);
+        cols[1].enabled = true;
 
         //stop highlight
         transform.Find("Highlight").GetComponent<Renderer>().enabled = false;

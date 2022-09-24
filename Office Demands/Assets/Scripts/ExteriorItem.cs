@@ -7,6 +7,11 @@ using UnityEngine;
 public class ExteriorItem : MonoBehaviour
 {
     public Vector3 returnPos;
+    public Vector3 targetSize = Vector3.one;
+    public ExteriorItemType type;
+    public Transform hangingHorizontalPos;
+    public Transform hangingVerticalPos;
+    public Transform groundPos;
     private float returnSpeed = 10f;
     PlayerControl player;
 
@@ -14,6 +19,7 @@ public class ExteriorItem : MonoBehaviour
     void Start()
     {
         player = PlayerControl.instance;
+        returnPos = transform.position;
     }
 
     private void OnMouseEnter()
@@ -34,7 +40,6 @@ public class ExteriorItem : MonoBehaviour
         if (!PlayerControl.IsHoldingSomething())
         {
             player.exteriorSelectedObject = gameObject;
-            returnPos = transform.position;
             GetComponent<Collider>().enabled = false;
             StopAllCoroutines();
         }
@@ -66,5 +71,17 @@ public class ExteriorItem : MonoBehaviour
 
         //stop highlight
         transform.Find("Highlight").GetComponent<Renderer>().enabled = false;
+    }
+
+    public Vector3 GetItemLocalPivotPosition()
+    {
+        Vector3 v = Vector3.zero;
+        if (hangingHorizontalPos)
+            v = hangingHorizontalPos.localPosition;
+        else if (hangingVerticalPos)
+            v = hangingVerticalPos.localPosition;
+        else if (groundPos)
+            v = groundPos.localPosition;
+        return v;
     }
 }
