@@ -19,6 +19,7 @@ public class InteriorItem : MonoBehaviour
     {
         player = PlayerControl.instance;
         haveBeenThrown = false;
+        returnPos = transform.position;
         cols = gameObject.GetComponentsInChildren<Collider>();
     }
 
@@ -40,7 +41,6 @@ public class InteriorItem : MonoBehaviour
         if (!PlayerControl.IsHoldingSomething() && !haveBeenThrown)
         {
             player.interiorSelectedObject = gameObject;
-            returnPos = transform.position;
             GetComponent<Collider>().enabled = false;
             StopAllCoroutines();
         }
@@ -73,6 +73,8 @@ public class InteriorItem : MonoBehaviour
 
         Destroy(cols[0]);
         cols[1].enabled = true;
+
+        transform.parent = null;
 
         //stop highlight
         transform.Find("Highlight").GetComponent<Renderer>().enabled = false;

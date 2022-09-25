@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class PaperList : MonoBehaviour
 {
+    public OfficeManager officeManager;
     public RectTransform textsInteriorParent;
     public RectTransform textsExteriorParent;
     public RectTransform paperBackground;
@@ -22,16 +23,24 @@ public class PaperList : MonoBehaviour
     public List<PaperListItem> exteriorListItems = new List<PaperListItem>();
     public List<InteriorItem> interiorItems = new List<InteriorItem>();
     public List<ExteriorItem> exteriorItems = new List<ExteriorItem>();
+    bool activated = false;
 
     // Start is called before the first frame update
     void Start()
     {
-        FillPaper(PickOfficeListCollection());
         thisRectTransform = GetComponent<RectTransform>();
         paperStartPos = thisRectTransform.localPosition;
         paperStartDeltaSize = thisRectTransform.sizeDelta;
         paperStartScale = thisRectTransform.localScale;
         paperTargetPos = paperStartPos;
+        activated = false;
+    }
+
+    public void SetupAndStart(OfficeManager manager)
+    {
+        officeManager = manager;
+        gameObject.SetActive(true);
+        FillPaper(PickOfficeListCollection());
     }
 
     // Update is called once per frame
@@ -42,8 +51,13 @@ public class PaperList : MonoBehaviour
         //thisRectTransform.localPosition = Vector2.Lerp(thisRectTransform.localPosition, paperTargetPos, Time.deltaTime * paperShowSpeed);
         //thisRectTransform.localScale = paperStartScale / (0.9f + (0.2f*((paperBackground.sizeDelta.y + 1) / 500f)));
         //thisRectTransform.sizeDelta = new Vector2(paperStartDeltaSize.x, paperBackground.sizeDelta.y);
-        
+
         UpdateList();
+
+        if (CheckForCompetion())
+        {
+            officeManager.PaperListCompleted(this);
+        }
     }
 
     public void FillPaper(OfficeListCollection collection)
@@ -66,6 +80,7 @@ public class PaperList : MonoBehaviour
             if (!first) first = true;
             else Destroy(child.gameObject);
         }
+        yield return new WaitForEndOfFrame();
 
         exteriorListItems = new List<PaperListItem>();
         interiorListItems = new List<PaperListItem>();
@@ -108,16 +123,21 @@ public class PaperList : MonoBehaviour
             }
         }
 
-        var l1 = textsInteriorParent.GetComponent<VerticalLayoutGroup>();
+        var l1 = textsInteriorParent.transform.parent.GetComponent<VerticalLayoutGroup>();
         l1.CalculateLayoutInputHorizontal();
         l1.CalculateLayoutInputVertical();
         l1.SetLayoutHorizontal();
         l1.SetLayoutVertical();
-        var l2 = textsExteriorParent.GetComponent<VerticalLayoutGroup>();
+        var l2 = textsInteriorParent.GetComponent<VerticalLayoutGroup>();
         l2.CalculateLayoutInputHorizontal();
         l2.CalculateLayoutInputVertical();
         l2.SetLayoutHorizontal();
         l2.SetLayoutVertical();
+        var l3 = textsExteriorParent.GetComponent<VerticalLayoutGroup>();
+        l3.CalculateLayoutInputHorizontal();
+        l3.CalculateLayoutInputVertical();
+        l3.SetLayoutHorizontal();
+        l3.SetLayoutVertical();
 
         yield return new WaitForEndOfFrame();
 
@@ -128,6 +148,8 @@ public class PaperList : MonoBehaviour
         paperStartPos.y = (paperStartPos.y + oldSizeDelta.y/2) - (thisRectTransform.sizeDelta.y * thisRectTransform.localScale.y / 2);
         //paperStartPos.y *= thisRectTransform.sizeDelta.y;
         paperTargetPos = paperStartPos;
+
+        activated = true;
     }
 
     public void PaperShow()
@@ -214,6 +236,27 @@ public class PaperList : MonoBehaviour
             }
             exteriorListItems[i].UpdateProgress();
         }
+    }
+
+    bool CheckForCompetion()
+    {
+        if (!activated) return false;
+
+        foreach (PaperListItem item in interiorListItems)
+        {
+            if (item.state == ItemListState.Pending || item.state == ItemListState.Fail)
+            {
+                return false;
+            }
+        }
+        foreach (PaperListItem item in exteriorListItems)
+        {
+            if (item.state == ItemListState.Pending || item.state == ItemListState.Fail)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     public string GetDemandFromInteriorType(InteriorItemType type)

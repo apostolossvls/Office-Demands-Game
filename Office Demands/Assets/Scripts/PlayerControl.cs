@@ -12,6 +12,8 @@ public class PlayerControl : MonoBehaviour
     private Camera cam;
     public float mousePosZ = 1.1f;
     public float doorPosZ = 3f;
+    public float doorBorderLeft = -0.5f;
+    public float doorBorderRight = 0.45f;
     public LineRenderer arrow;
     Vector3 draggingTargetPos;
     float draggingFollowSpeed = 20f;
@@ -56,10 +58,10 @@ public class PlayerControl : MonoBehaviour
             draggingTargetPos = MousePos();
             Vector3 target = draggingTargetPos;
             //if (cam.ScreenToViewportPoint(Input.mousePosition).x > 0.33f)
-            if (target.x > -0.45f)
+            if (target.x > doorBorderLeft + Camera.main.transform.position.x)
             {
                 Renderer r = arrow.GetComponent<Renderer>();
-                if (target.x <= 0.52f)
+                if (target.x <= doorBorderRight + Camera.main.transform.position.x)
                 {
                     r.material.color = Color.green;
                     interiorObjectWillFly = true;
@@ -69,7 +71,7 @@ public class PlayerControl : MonoBehaviour
                     interiorObjectWillFly = false;
                     r.material.color = Color.red;
                 }
-                target.x = -0.52f;
+                target.x = doorBorderLeft + Camera.main.transform.position.x;
                 arrow.gameObject.SetActive(true);
                 Vector3 arrowTarget = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, doorPosZ));
                 arrow.transform.position = Vector3.Slerp(arrow.transform.position, target, Time.deltaTime * draggingFollowSpeed);
