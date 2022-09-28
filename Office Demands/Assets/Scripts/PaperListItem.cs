@@ -31,6 +31,11 @@ public class PaperListItem : MonoBehaviour
         this.amount = amount;
     }
 
+    private void LateUpdate()
+    {
+        checkedOnUpdate = false;
+    }
+
     public void SetAmount(int value)
     {
         amount = value;

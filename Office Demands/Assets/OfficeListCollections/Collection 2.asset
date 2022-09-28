@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Collection 2
   m_EditorClassIdentifier: 
   interiorItemTypes: 0000000001000000030000000400000007000000
-  exteriorItemTypes: 000000000600000002000000
+  exteriorItemTypes: 000000000300000006000000

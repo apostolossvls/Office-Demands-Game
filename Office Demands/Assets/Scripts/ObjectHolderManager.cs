@@ -23,6 +23,17 @@ public class ObjectHolderManager : MonoBehaviour
             {
                 items.Add(holder.item);
             }
+            ExteriorItem ex = holder.GetComponentInChildren<ExteriorItem>();
+            if (ex != null)
+            {
+                foreach (ObjectHolder h in ex.GetComponentsInChildren<ObjectHolder>())
+                {
+                    if (h.item != null)
+                    {
+                        items.Add(h.item);
+                    }
+                }
+            }
         }
         paperList.exteriorItems = items;
     }

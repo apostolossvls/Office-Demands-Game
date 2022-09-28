@@ -20,8 +20,8 @@ public class PlayerControl : MonoBehaviour
     public float throwForce = 20f;
     public float throwScaleSpeed = 2f;
     public bool interiorObjectWillFly;
-    public GameObject exteriorSelectedObject;
-    public GameObject interiorSelectedObject;
+    public ExteriorItem exteriorSelectedObject;
+    public InteriorItem interiorSelectedObject;
     public ObjectHolder objectHolder;
 
     private void Awake()
@@ -42,26 +42,29 @@ public class PlayerControl : MonoBehaviour
         if (exteriorSelectedObject)
         {
             //object selected highlight
-            exteriorSelectedObject.transform.Find("Highlight").GetComponent<Renderer>().enabled = true;
+            exteriorSelectedObject.animator.SetBool("Grab", true);
+            //exteriorSelectedObject.transform.Find("Highlight").GetComponent<Renderer>().enabled = true;
 
             //move object
             draggingTargetPos = MousePos();
+            exteriorSelectedObject.mirrorPos = draggingTargetPos.x < cam.transform.position.x;
             exteriorSelectedObject.transform.position = Vector3.Slerp(exteriorSelectedObject.transform.position, draggingTargetPos, Time.deltaTime * draggingFollowSpeed);
         }
 
         if (interiorSelectedObject)
         {
             //object selected highlight
-            interiorSelectedObject.transform.Find("Highlight").GetComponent<Renderer>().enabled = true;
+            interiorSelectedObject.animator.SetBool("Grab", true);
+            //interiorSelectedObject.transform.Find("Highlight").GetComponent<Renderer>().enabled = true;
 
             //move object
             draggingTargetPos = MousePos();
             Vector3 target = draggingTargetPos;
             //if (cam.ScreenToViewportPoint(Input.mousePosition).x > 0.33f)
-            if (target.x > doorBorderLeft + Camera.main.transform.position.x)
+            if (target.x > doorBorderLeft + cam.transform.position.x)
             {
                 Renderer r = arrow.GetComponent<Renderer>();
-                if (target.x <= doorBorderRight + Camera.main.transform.position.x)
+                if (target.x <= doorBorderRight + cam.transform.position.x)
                 {
                     r.material.color = Color.green;
                     interiorObjectWillFly = true;
@@ -92,21 +95,30 @@ public class PlayerControl : MonoBehaviour
             {
                 if (objectHolder != null)
                 {
-                    ExteriorItem exItem = exteriorSelectedObject.GetComponent<ExteriorItem>();
-                    if (objectHolder.CanHold(exItem))
+                    if (objectHolder.CanHold(exteriorSelectedObject))
                     {
-                        objectHolder.TakeItem(exItem);
+                        exteriorSelectedObject.OnEndDragFoundPlace();
+                        objectHolder.TakeItem(exteriorSelectedObject);
                     }
+                    else exteriorSelectedObject.OnEndDrag();
                 }
-                exteriorSelectedObject.SendMessage(objectHolder == null ? "OnEndDrag" : "OnEndDragFoundPlace", SendMessageOptions.DontRequireReceiver);
+                else exteriorSelectedObject.OnEndDrag();
+                //exteriorSelectedObject.SendMessage(objectHolder == null ? "OnEndDrag" : "OnEndDragFoundPlace", SendMessageOptions.DontRequireReceiver);
                 exteriorSelectedObject = null;
             }
 
             if (interiorSelectedObject != null)
             {
                 arrow.gameObject.SetActive(false);
-                if (interiorObjectWillFly) StartCoroutine(ThrowItem(interiorSelectedObject, arrow.transform.position + arrow.GetPosition(1)));
-                interiorSelectedObject.SendMessage(interiorObjectWillFly? "OnEndDragFly" : "OnEndDrag", SendMessageOptions.DontRequireReceiver);
+                if (interiorObjectWillFly)
+                {
+                    interiorSelectedObject.OnEndDragFly();
+                    StartCoroutine(ThrowItem(interiorSelectedObject, arrow.transform.position + arrow.GetPosition(1)));
+                }
+                else
+                {
+                    interiorSelectedObject.OnEndDrag();
+                }
                 interiorSelectedObject = null;
                 interiorObjectWillFly = false;
             }
@@ -123,10 +135,10 @@ public class PlayerControl : MonoBehaviour
         return instance.interiorSelectedObject != null || instance.exteriorSelectedObject != null;
     }
 
-    IEnumerator ThrowItem(GameObject item, Vector3 target)
+    IEnumerator ThrowItem(InteriorItem item, Vector3 target)
     {
         item.tag = "Untagged";
-        Vector3 targetSize = item.GetComponent<InteriorItem>().targetSize;
+        Vector3 targetSize = item.targetSize;
 
         Collider col = item.GetComponent<Collider>();
         if (col)

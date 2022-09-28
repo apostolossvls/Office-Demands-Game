@@ -9,11 +9,12 @@ public class OfficeManager : MonoBehaviour
     public List<PaperList> paperLists;
     public GameObject[] roomTemplates;
     public List<GameObject> rooms;
+    public int roomsCount = 3;
 
     // Start is called before the first frame update
     void Start()
     {
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < roomsCount; i++)
         {
             CreateRoom();
         }
@@ -66,6 +67,7 @@ public class OfficeManager : MonoBehaviour
 
         Transform cam = Camera.main.transform;
         cam.position = rooms[roomIndex].transform.Find("RoomCameraPosition").position;
+        /*
         foreach (ExteriorItem item in cam.GetComponentsInChildren<ExteriorItem>())
         {
             item.returnPos = item.transform.position;
@@ -74,5 +76,6 @@ public class OfficeManager : MonoBehaviour
         {
             item.returnPos = item.transform.position;
         }
+        */
     }
 }
