@@ -6,8 +6,8 @@ public class Door : MonoBehaviour
 {
     public Animator animator;
     PlayerControl playerControl;
-    public float speedCloseNormal = 1.2f;
-    public float speedCloseForced = 0.2f;
+    public float timeHoldOpen = 0.5f;
+    float timer = 0;
 
 
     // Start is called before the first frame update
@@ -19,7 +19,15 @@ public class Door : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        animator.SetBool("ObjectFlyInside", playerControl.interiorObjectWillFly);
-        //animator.SetFloat("DoorCloseSpeed", playerControl.interiorObjectWillFly? speedCloseNormal : speedCloseForced);
+        if (timer > 0)
+        {
+            timer -= Time.deltaTime;
+        }
+        if (playerControl.interiorObjectWillFly && timer <= 0)
+        {
+            timer = timeHoldOpen;
+        }
+        
+        animator.SetBool("ObjectFlyInside", playerControl.interiorObjectWillFly || timer > 0);
     }
 }

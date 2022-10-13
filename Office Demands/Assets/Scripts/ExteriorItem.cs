@@ -95,6 +95,7 @@ public class ExteriorItem : MonoBehaviour
             if (col.name != this.name)
             {
                 col.enabled = true;
+                if (col.gameObject.layer == LayerMask.NameToLayer("3DUI")) col.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
             }
         }
         //transform.Find("Highlight").GetComponent<Renderer>().enabled = false;

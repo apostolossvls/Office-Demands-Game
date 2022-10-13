@@ -21,7 +21,14 @@ public class KillOnTrigger : MonoBehaviour
         InteriorItem i = other.GetComponentInParent<InteriorItem>();
         if (i != null)
         {
-            Destroy(other.gameObject);
+            if (other.GetComponent<ObjectFlyDetach>())
+            {
+                Destroy(other.gameObject);
+            }
+            else
+            {
+                Destroy(i.gameObject);
+            }
         }
     }
 }

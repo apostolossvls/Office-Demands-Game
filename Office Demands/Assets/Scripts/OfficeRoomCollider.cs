@@ -25,7 +25,7 @@ public class OfficeRoomCollider : MonoBehaviour
         InteriorItem interiorItem = other.GetComponentInParent<InteriorItem>();
         if (interiorItem)
         {
-            interiorItems.Add(interiorItem);
+            if (!interiorItems.Contains(interiorItem)) interiorItems.Add(interiorItem);
         }
     }
 }

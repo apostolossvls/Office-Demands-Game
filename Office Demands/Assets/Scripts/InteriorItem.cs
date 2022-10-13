@@ -14,7 +14,6 @@ public class InteriorItem : MonoBehaviour
     private float returnSpeed = 10f;
     PlayerControl player;
     bool haveBeenThrown;
-    Collider[] cols;
 
     // Start is called before the first frame update
     void Start()
@@ -22,7 +21,6 @@ public class InteriorItem : MonoBehaviour
         player = PlayerControl.instance;
         haveBeenThrown = false;
         returnPoint = transform.parent;
-        cols = gameObject.GetComponentsInChildren<Collider>();
     }
 
     private void OnMouseEnter()
@@ -78,9 +76,24 @@ public class InteriorItem : MonoBehaviour
         //place in object holder
         haveBeenThrown = true;
 
-        Destroy(cols[0]);
-        cols[1].enabled = true;
+        foreach (Collider col in GetComponentsInChildren<Collider>())
+        {
+            if (col.name != this.name)
+            {
+                col.enabled = true;
+            }
+            else
+            {
+                Destroy(col);
+            }
+        }
+
         transform.parent = null;
+        ObjectFlyDetach[] group = transform.GetComponentsInChildren<ObjectFlyDetach>();
+        foreach (ObjectFlyDetach item in group)
+        {
+            item.ObjectFly();
+        }
 
         SetGameLayerRecursive(gameObject, LayerMask.NameToLayer("Default"));
 
@@ -94,6 +107,8 @@ public class InteriorItem : MonoBehaviour
         GameObject clone = GameObject.Instantiate(gameObject, returnPoint);
         clone.transform.localPosition = Vector3.zero;
         clone.name = gameObject.name;
+
+        clone.GetComponent<Collider>().enabled = true;
 
         animator.SetBool("Hover", false);
         animator.SetBool("Grab", false);
